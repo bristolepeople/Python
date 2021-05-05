@@ -9,7 +9,7 @@ pygame.init()
 size = (1000, 1000)
 screen = pygame.display.set_mode(size)
 
-
+#comment
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
