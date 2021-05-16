@@ -1,15 +1,12 @@
 import random
 #using pygame python GUI 
 import pygame
-from colorutils import Color
 import time
 pygame.init()
 
 # Setting the width and height of the screen [width, height]
 size = (800, 800)
 screen = pygame.display.set_mode(size)
-
-#comment
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -42,6 +39,7 @@ class Cell(object):
          pygame.draw.rect(screen, BLACK, (self._xLoc, self._yLoc, self._width, self._height), 5)
 
 
+
 def findUnvisited(grid):
     """
         Build a list of indecies for unvisited cells.
@@ -52,6 +50,38 @@ def findUnvisited(grid):
             if not grid[x][y]._visited:
                 unvisited.append((x,y))
     return unvisited
+
+
+def startHunt(grid):
+    # Find random unvisited cell.
+    unvisited = findUnvisited(grid)
+    first = random.choice(unvisited)
+    return hunt(grid,first,unvisited)
+
+def hunt(grid,cell,unvisited):
+    
+    grid[cell[0]][cell[1]]._visited = True
+    grid[cell[0]][cell[1]]._colour = WHITE
+    grid[cell[0]][cell[1]].draw()
+    pygame.display.flip()
+    time.sleep(0.5)
+
+    pressed = False
+    #while not pressed:
+    #    ev = pygame.event.get()
+    #    for event in ev:
+    #        if event.type == pygame.MOUSEBUTTONUP:
+    #            pressed = True
+    
+    unvisited.remove(cell)
+
+    neighbours = [(cell[0]+1,cell[1]),(cell[0]-1,cell[1]),(cell[0],cell[1]+1),(cell[0],cell[1]-1)]
+
+    unvisitedNeighbours = list(set(neighbours) & set(unvisited))
+    if unvisitedNeighbours:
+        next = random.choice(unvisitedNeighbours)
+        hunt(grid,next,unvisited)    
+    return grid
 
 screen.fill(BLUE)
 
@@ -71,11 +101,11 @@ for x in range(size):
 
     grid.append(row)
 
-pygame.draw.rect(screen, WHITE, (255, 255, 40, 40),0)
 
 pygame.display.flip()
 
-# unvisited = findUnvisited(grid)
+while findUnvisited(grid):
+    grid = startHunt(grid)
 
 pressed = False
 while not pressed:
@@ -83,4 +113,3 @@ while not pressed:
     for event in ev:
         if event.type == pygame.MOUSEBUTTONUP:
             pressed = True
-
