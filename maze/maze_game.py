@@ -6,7 +6,7 @@ import time
 pygame.init()
 
 # Setting the width and height of the screen [width, height]
-size = (1000, 1000)
+size = (800, 800)
 screen = pygame.display.set_mode(size)
 
 #comment
@@ -45,7 +45,7 @@ screen.fill(BLUE)
 
 grid = []
 
-size = 17
+size = 10
 
 for x in range(size):
 
