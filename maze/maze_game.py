@@ -25,6 +25,7 @@ class Cell(object):
         w, h = pygame.display.get_surface().get_size()
         self._width = 50
         self._height = self._width
+        self._visited = False
         self._north = True
         self._west = True
         self._east = True
@@ -40,8 +41,19 @@ class Cell(object):
     def drawWalls(self):
          pygame.draw.rect(screen, BLACK, (self._xLoc, self._yLoc, self._width, self._height), 5)
 
-screen.fill(BLUE)
 
+def findUnvisited(grid):
+    """
+        Build a list of indecies for unvisited cells.
+    """
+    unvisited = []
+    for x in range(len(grid)):
+        for y in range(len(grid[1])):
+            if not grid[x][y]._visited:
+                unvisited.append((x,y))
+    return unvisited
+
+screen.fill(BLUE)
 
 grid = []
 
@@ -53,16 +65,22 @@ for x in range(size):
 
     for i in range(size):
         row.append(Cell(screen, 100+i*50, 100 + x * 50))
-
     for c in row:
         c.draw()
         c.drawWalls()
 
     grid.append(row)
 
-
 pygame.draw.rect(screen, WHITE, (255, 255, 40, 40),0)
 
 pygame.display.flip()
-time.sleep(5)
+
+# unvisited = findUnvisited(grid)
+
+pressed = False
+while not pressed:
+    ev = pygame.event.get()
+    for event in ev:
+        if event.type == pygame.MOUSEBUTTONUP:
+            pressed = True
 
