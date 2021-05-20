@@ -33,12 +33,25 @@ class Cell(object):
         """
             draws the cell on the screen.
         """
-        pygame.draw.rect(screen, self._colour, (self._xLoc, self._yLoc, self._width, self._height), 0)
+        pygame.draw.rect(screen, self._colour, (self._xLoc + 5, self._yLoc + 5, self._width -5 , self._height - 5), 0)
 
     def drawWalls(self):
-         pygame.draw.rect(screen, BLACK, (self._xLoc, self._yLoc, self._width, self._height), 5)
-
-
+        if self._north:
+            pygame.draw.rect(screen, BLACK, (self._xLoc, self._yLoc, self._width, 5), 0)
+        else:
+            pygame.draw.rect(screen, WHITE, (self._xLoc, self._yLoc, self._width, 5), 0)
+        if self._south:
+            pygame.draw.rect(screen, BLACK, (self._xLoc, self._yLoc + self._height - 5 , self._width, 5), 0)
+        else:
+            pygame.draw.rect(screen, WHITE, (self._xLoc, self._yLoc + self._height - 5 , self._width, 5), 0)
+        if self._west:
+            pygame.draw.rect(screen, BLACK, (self._xLoc, self._yLoc, 5, self._height), 0)
+        else:
+            pygame.draw.rect(screen, WHITE, (self._xLoc, self._yLoc, 5, self._height), 0)
+        if self._east:
+            pygame.draw.rect(screen, BLACK, (self._xLoc + self._width -5, self._yLoc, 5, self._height), 0)
+        else:
+            pygame.draw.rect(screen, WHITE, (self._xLoc + self._width -5, self._yLoc, 5, self._height), 0)
 
 def findUnvisited(grid):
     """
@@ -62,16 +75,10 @@ def hunt(grid,cell,unvisited):
     
     grid[cell[0]][cell[1]]._visited = True
     grid[cell[0]][cell[1]]._colour = WHITE
-    grid[cell[0]][cell[1]].draw()
-    pygame.display.flip()
-    time.sleep(0.5)
-
+    grid[cell[0]][cell[1]].draw()    
+    grid[cell[0]][cell[1]].drawWalls()
+    
     pressed = False
-    #while not pressed:
-    #    ev = pygame.event.get()
-    #    for event in ev:
-    #        if event.type == pygame.MOUSEBUTTONUP:
-    #            pressed = True
     
     unvisited.remove(cell)
 
@@ -80,7 +87,26 @@ def hunt(grid,cell,unvisited):
     unvisitedNeighbours = list(set(neighbours) & set(unvisited))
     if unvisitedNeighbours:
         next = random.choice(unvisitedNeighbours)
-        hunt(grid,next,unvisited)    
+        if next[1] < cell[1]:
+            grid[next[0]][next[1]]._east = False
+            grid[cell[0]][cell[1]]._west = False
+        if next[1] > cell[1]:
+            grid[next[0]][next[1]]._west = False
+            grid[cell[0]][cell[1]]._east = False
+        if next[0] < cell[0]:
+            grid[next[0]][next[1]]._south = False
+            grid[cell[0]][cell[1]]._north = False
+        if next[0] > cell[0]:
+            grid[next[0]][next[1]]._north = False
+            grid[cell[0]][cell[1]]._south = False            
+
+        grid[cell[0]][cell[1]].drawWalls()
+        grid[next[0]][next[1]].drawWalls()
+
+        pygame.display.flip()
+        time.sleep(0.1)
+        hunt(grid,next,unvisited)  
+
     return grid
 
 screen.fill(BLUE)
