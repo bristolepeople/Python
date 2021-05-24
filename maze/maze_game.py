@@ -7,8 +7,10 @@ pygame.init()
 # Setting the width and height of the screen [width, height]
 size = (1200, 700)
 screen = pygame.display.set_mode(size)
-cellSize = 20
+cellSize = 6
 wallThickness = 2
+
+unvisited = []
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -59,63 +61,58 @@ def findUnvisited(grid):
     """
         Build a list of indecies for unvisited cells.
     """
-    unvisited = []
     for x in range(len(grid)):
         for y in range(len(grid[1])):
             if not grid[x][y]._visited:
                 unvisited.append((x,y))
     return unvisited
 
+def findUnvisitedNeighbours(grid, cell):
+    neighbours = [(cell[0]+1,cell[1]),(cell[0]-1,cell[1]),(cell[0],cell[1]+1),(cell[0],cell[1]-1)]
+    unvistedNeighbours = []
+    for cell in neighbours:
+        if ((cell[0] >= 0) and (cell[0] < len(grid)) and (cell[1] >= 0) and (cell[1] < len(grid[0])) and (grid[cell[0]][cell[1]]._visited == False)):
+            unvistedNeighbours.append(cell)
+    return unvistedNeighbours
+
 def findFirstUnvisitedWithVisitedNeighbour(grid):
     rightToLeft = bool(random.getrandbits(1))
-    bottomToTop = bool(random.getrandbits(1))
     
     xRange = range(len(grid))
     if rightToLeft:
         xRange = reversed(xRange)
     yRange = range(len(grid[0]))
-#    if bottomToTop:
-#        yRange = reversed(yRange)
     for x in xRange:
         for y in yRange:
             if grid[x][y]._visited:
-                unvisitedNeighbours = findUnvisitedNeighbours((x,y), grid)
+                unvisitedNeighbours = findUnvisitedNeighbours(grid,(x,y))
                 if unvisitedNeighbours:
                     return ((x,y))
 
-def findUnvisitedNeighbours(cell,grid):
-    neighbours = [(cell[0]+1,cell[1]),(cell[0]-1,cell[1]),(cell[0],cell[1]+1),(cell[0],cell[1]-1)]
-    myUnvisitedNeighbours = list(set(neighbours) & set(findUnvisited(grid)))
-    return myUnvisitedNeighbours
-
 def startHunt(grid):
     # Find random unvisited cell.
-    unvisited = findUnvisited(grid)
     first = random.choice(unvisited)
-    return hunt(grid,first,unvisited)
+    return hunt(grid,first)
 
 def continueHunt(grid):
     # Find random unvisited cell.
     cell = findFirstUnvisitedWithVisitedNeighbour(grid)
-    unvisited = findUnvisited(grid)
-    return hunt(grid,cell,unvisited)
+   
+    return hunt(grid,cell)
 
-def hunt(grid,cell,unvisited):
+def hunt(grid,cell):
     
     grid[cell[0]][cell[1]]._visited = True
     grid[cell[0]][cell[1]]._colour = WHITE
     grid[cell[0]][cell[1]].draw()    
     grid[cell[0]][cell[1]].drawWalls()
     
-    pressed = False
-    
     if cell in unvisited: unvisited.remove(cell)
 
-    neighbours = [(cell[0]+1,cell[1]),(cell[0]-1,cell[1]),(cell[0],cell[1]+1),(cell[0],cell[1]-1)]
+    unvistedNeighbours = findUnvisitedNeighbours(grid, cell)
 
-    unvisitedNeighbours = list(set(neighbours) & set(unvisited))
-    if unvisitedNeighbours:
-        next = random.choice(unvisitedNeighbours)
+    if unvistedNeighbours:
+        next = random.choice(unvistedNeighbours)
         if next[1] < cell[1]:
             grid[next[0]][next[1]]._east = False
             grid[cell[0]][cell[1]]._west = False
@@ -132,36 +129,33 @@ def hunt(grid,cell,unvisited):
         grid[cell[0]][cell[1]].drawWalls()
         grid[next[0]][next[1]].drawWalls()
 
-        pygame.display.flip()
-        #time.sleep(0.01)
-        hunt(grid,next,unvisited)  
+        grid = hunt(grid,next)  
 
     return grid
 
+def createGrid(height, width):
+    grid = []
+    for y in range(height):
+        row = []
+        for x in range(width):
+            row.append(Cell(screen, 10+x*cellSize, 10 + y * cellSize))
+        for c in row:
+            c.draw()
+            c.drawWalls()
+        grid.append(row)
+    return grid
+
 screen.fill(BLUE)
-
-grid = []
-
-
-
-for y in range(30):
-
-    row = []
-
-    for x in range(50):
-        row.append(Cell(screen, 10+x*cellSize, 10 + y * cellSize))
-    for c in row:
-        c.draw()
-        c.drawWalls()
-
-    grid.append(row)
-
-
+grid = createGrid(100,180)
 pygame.display.flip()
 
+unvisited = findUnvisited(grid)
+
 grid = startHunt(grid)
-while findUnvisited(grid):
+pygame.display.flip()
+while unvisited:
     grid = continueHunt(grid)
+    pygame.display.flip()
 
 pressed = False
 while not pressed:
